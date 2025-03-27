@@ -1,14 +1,16 @@
-name: Deploy FastAPI to DockerHub
+name: Deploy React, nginx to DockerHub
 
 permissions:
   contents: write
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - Lint Code # lint.yml에서 정의한 Workflow 이름을 참조합니다.
+    types:
+      - completed # lint 작업이 완료된 후 실행
     branches:
-      - main
-    tags:
-      - "v*.*.*"
+      - main # main 브랜치의 workflow_run 이벤트에서만 실행
 
 jobs:
   build-and-push:
