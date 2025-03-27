@@ -29,6 +29,7 @@ export interface CaptchaChallenge {
   export async function submitCaptchaImage(imageBase64: string, id: string): Promise<PredictResponse> {
     // 시뮬레이션: 랜덤으로 정답 or 오답 처리
     const passed = Math.random() < 0.5;
+    console.log("[Mock] Captcha submitted:", { imageBase64, id });
     return new Promise(resolve =>
       setTimeout(() => resolve({
         passed,
