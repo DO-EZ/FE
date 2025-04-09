@@ -24,7 +24,7 @@ export async function fetchCaptchaChallenge(): Promise<CaptchaChallenge> {
   };
   console.log('[Mock] New captcha:', currentMockCaptcha.expected);
   return new Promise((resolve) =>
-    setTimeout(() => resolve(currentMockCaptcha), 300)
+    setTimeout(() => { resolve(currentMockCaptcha); }, 300)
   ); // simulate delay
 }
 
@@ -38,10 +38,10 @@ export async function submitCaptchaImage(
   return new Promise((resolve) =>
     setTimeout(
       () =>
-        resolve({
+        { resolve({
           passed,
           message: passed ? '통과!' : '실패!',
-        }),
+        }); },
       500
     )
   );

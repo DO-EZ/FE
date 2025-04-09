@@ -11,21 +11,6 @@ const CaptchaCanvas: React.FC = () => {
   const [captchaText, setCaptchaText] = useState<string>('');
   const [captchaId, setCaptchaId] = useState<string>('');
 
-  const fetchChallenge = async () => {
-    try {
-      const data = await fetchCaptchaChallenge();
-      setCaptchaText(data.expected);
-      setCaptchaId(data.id);
-      clearCanvas();
-      setMessage('');
-    } catch {
-      setMessage('⚠️ 캡차 불러오기 실패');
-    }
-  };
-
-  useEffect(() => {
-    fetchChallenge();
-  }, []);
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
@@ -36,6 +21,29 @@ const CaptchaCanvas: React.FC = () => {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
   };
+
+  useEffect(() => {
+    const initializeCaptcha = async () => {
+      await fetchChallenge();
+    };
+    void initializeCaptcha();
+  }, []);
+
+  const fetchChallenge = async () => {
+    try {
+      const data = await fetchCaptchaChallenge();
+      setCaptchaText(data.expected);
+      setCaptchaId(data.id);
+      clearCanvas();
+      setMessage('');
+    } catch (error) {
+      setMessage('⚠️ 캡차 불러오기 실패');
+      console.error(error);
+    }
+  };
+
+
+  
 
   const handleMouseDown = (e: React.MouseEvent) => {
     isDrawing.current = true;
@@ -99,10 +107,12 @@ const CaptchaCanvas: React.FC = () => {
         }}
       />
       <div style={{ marginTop: '10px' }}>
-        <button onClick={handleSubmit} style={{ marginRight: '10px' }}>
+        <button type="button" onClick={() => void handleSubmit()} style={{ marginRight: '10px' }}>
           제출
         </button>
-        <button onClick={fetchChallenge}>새로고침</button>
+        <button type="button" onClick={() => void fetchChallenge()} style={{ marginRight: '10px' }}>
+          새로고침
+        </button>
       </div>
       <p style={{ marginTop: '10px' }}>{message}</p>
     </div>

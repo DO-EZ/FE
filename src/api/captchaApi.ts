@@ -14,17 +14,17 @@ export interface PredictResponse {
 const BASE_URL = 'http://localhost:8000'; // 백엔드 주소
 
 export async function fetchCaptchaChallenge(): Promise<CaptchaChallenge> {
-  const res = await axios.get(`${BASE_URL}/captcha`, {
+  const res = await axios.get<CaptchaChallenge>(`${BASE_URL}/captcha`, {
     withCredentials: true,
   });
-  return await res.data;
+  return res.data;
 }
 
 export async function submitCaptchaImage(
   imageBase64: string,
   id: string
 ): Promise<PredictResponse> {
-  const res = await axios.post(
+  const res = await axios.post<PredictResponse>(
     `${BASE_URL}/predict`,
     {
       image: imageBase64,
@@ -35,5 +35,5 @@ export async function submitCaptchaImage(
     }
   );
 
-  return await res.data;
+  return res.data;
 }
