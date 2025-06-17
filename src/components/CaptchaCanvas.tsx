@@ -10,7 +10,7 @@ const CaptchaCanvas: React.FC = () => {
   const [message, setMessage] = useState('');
   const [captchaText, setCaptchaText] = useState<string>('');
   const [captchaId, setCaptchaId] = useState<string>('');
-
+  const [isLoading, setIsLoading] = useState(false);
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
@@ -31,6 +31,8 @@ const CaptchaCanvas: React.FC = () => {
 
   const fetchChallenge = async () => {
     try {
+      setIsLoading(true);
+      setCaptchaId(''); // ID 초기화
       const data = await fetchCaptchaChallenge();
       setCaptchaText(data.expected);
       setCaptchaId(data.id);
@@ -39,13 +41,13 @@ const CaptchaCanvas: React.FC = () => {
     } catch (error) {
       setMessage('⚠️ 캡차 불러오기 실패');
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-
-  
-
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (isLoading) return; // 로딩 중에는 그리기 방지
     isDrawing.current = true;
     const ctx = canvasRef.current?.getContext('2d');
     ctx?.beginPath();
@@ -53,7 +55,7 @@ const CaptchaCanvas: React.FC = () => {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDrawing.current) return;
+    if (!isDrawing.current || isLoading) return; // 로딩 중에는 그리기 방지
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return;
     ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
@@ -68,12 +70,15 @@ const CaptchaCanvas: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (isLoading || !captchaId) return; // 로딩 중이거나 ID가 없으면 제출 방지
+    
     const canvas = canvasRef.current;
-    if (!canvas || !captchaId) return;
+    if (!canvas) return;
 
     const image = canvas.toDataURL('image/png');
 
     try {
+      setIsLoading(true);
       const res = await submitCaptchaImage(image, captchaId);
       const msg = res.message;
       console.log(res);
@@ -87,6 +92,8 @@ const CaptchaCanvas: React.FC = () => {
       }
     } catch (err) {
       setMessage('⚠️ 서버 오류');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,14 +110,25 @@ const CaptchaCanvas: React.FC = () => {
         style={{
           background: '#fff',
           border: '1px solid #aaa',
-          cursor: 'crosshair',
+          cursor: isLoading ? 'not-allowed' : 'crosshair',
+          opacity: isLoading ? 0.7 : 1,
         }}
       />
       <div style={{ marginTop: '10px' }}>
-        <button type="button" onClick={() => void handleSubmit()} style={{ marginRight: '10px' }}>
+        <button 
+          type="button" 
+          onClick={() => void handleSubmit()} 
+          style={{ marginRight: '10px' }}
+          disabled={isLoading || !captchaId}
+        >
           제출
         </button>
-        <button type="button" onClick={() => void fetchChallenge()} style={{ marginRight: '10px' }}>
+        <button 
+          type="button" 
+          onClick={() => void fetchChallenge()} 
+          style={{ marginRight: '10px' }}
+          disabled={isLoading}
+        >
           새로고침
         </button>
       </div>
